@@ -11,10 +11,26 @@
                 </div>
 
                 <!-- Navigation Links -->
+                
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+
+                    @if (auth()->user()->role === 'admin')
+                        <x-nav-link :href="route('admin.specialties.index')" :active="request()->routeIs('admin.specialties.*')">
+                            {{ __('Specialties') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('admin.doctors.index')" :active="request()->routeIs('admin.doctors.*')">
+                            {{ __('Doctors') }}
+                        </x-nav-link>
+                    @endif
+
+                    @if (auth()->user()->role === 'doctor')
+                        <x-nav-link :href="route('doctor.availabilities.index')" :active="request()->routeIs('doctor.availabilities.*')">
+                            {{ __('My Hours') }}
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 
