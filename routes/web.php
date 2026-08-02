@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AvailabilityController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -32,3 +33,19 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+Route::middleware(['auth', 'verified', 'checkrole:doctor'])->group(function () {
+    Route::get('/doctor/availabilities', [AvailabilityController::class, 'index'])->name('doctor.availabilities.index');
+    Route::post('/doctor/availabilities', [AvailabilityController::class, 'store'])->name('doctor.availabilities.store');
+    Route::delete('/doctor/availabilities/{id}', [AvailabilityController::class, 'destroy'])->name('doctor.availabilities.destroy');
+});
+
+use App\Http\Controllers\Admin\SpecialtyController;
+use App\Http\Controllers\Admin\DoctorController;
+
+Route::middleware(['auth', 'verified', 'checkrole:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::resource('specialties', SpecialtyController::class);
+    Route::get('doctors', [DoctorController::class, 'index'])->name('doctors.index');
+    Route::get('doctors/create', [DoctorController::class, 'create'])->name('doctors.create');
+    Route::post('doctors', [DoctorController::class, 'store'])->name('doctors.store');
+});

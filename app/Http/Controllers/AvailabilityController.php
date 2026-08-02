@@ -25,7 +25,7 @@ class AvailabilityController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'jour_semaine' => ['required', 'integer', 'between:0,6'],
+            'jour_semaine' => ['required', 'integer', 'between:1,7'],
             'heure_debut'  => ['required', 'date_format:H:i'],
             'heure_fin'    => ['required', 'date_format:H:i', 'after:heure_debut'],
         ]);
