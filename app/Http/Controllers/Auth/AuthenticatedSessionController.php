@@ -31,11 +31,11 @@ class AuthenticatedSessionController extends Controller
         $user = Auth::user();
 
         return match ($user->role) {
-        'admin'   => redirect()->intended(route('admin.dashboard', absolute: false)),
-        'doctor'  => redirect()->intended(route('doctor.dashboard', absolute: false)),
-        'patient' => redirect()->intended(route('patient.dashboard', absolute: false)),
-        default   => redirect()->intended(route('dashboard', absolute: false)),
-        };
+        'admin'   => redirect(route('admin.dashboard', absolute: false)),
+        'doctor'  => redirect(route('doctor.dashboard', absolute: false)),
+        'patient' => redirect(route('patient.dashboard', absolute: false)),
+        default   => redirect(route('dashboard', absolute: false)),
+        };  
     }
 
     /**

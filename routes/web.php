@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AvailabilityController;
+use App\Http\Controllers\AbsenceController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -38,6 +39,9 @@ Route::middleware(['auth', 'verified', 'checkrole:doctor'])->group(function () {
     Route::get('/doctor/availabilities', [AvailabilityController::class, 'index'])->name('doctor.availabilities.index');
     Route::post('/doctor/availabilities', [AvailabilityController::class, 'store'])->name('doctor.availabilities.store');
     Route::delete('/doctor/availabilities/{id}', [AvailabilityController::class, 'destroy'])->name('doctor.availabilities.destroy');
+    Route::get('/doctor/absences', [AbsenceController::class, 'index'])->name('doctor.absences.index');
+    Route::post('/doctor/absences', [AbsenceController::class, 'store'])->name('doctor.absences.store');
+    Route::delete('/doctor/absences/{id}', [AbsenceController::class, 'destroy'])->name('doctor.absences.destroy');
 });
 
 use App\Http\Controllers\Admin\SpecialtyController;
@@ -48,4 +52,7 @@ Route::middleware(['auth', 'verified', 'checkrole:admin'])->prefix('admin')->nam
     Route::get('doctors', [DoctorController::class, 'index'])->name('doctors.index');
     Route::get('doctors/create', [DoctorController::class, 'create'])->name('doctors.create');
     Route::post('doctors', [DoctorController::class, 'store'])->name('doctors.store');
+    Route::get('doctors/{doctor}/edit', [DoctorController::class, 'edit'])->name('doctors.edit');
+    Route::put('doctors/{doctor}', [DoctorController::class, 'update'])->name('doctors.update');
+    Route::delete('doctors/{doctor}', [DoctorController::class, 'destroy'])->name('doctors.destroy');
 });

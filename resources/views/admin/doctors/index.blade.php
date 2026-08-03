@@ -15,12 +15,20 @@
             <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
                 @forelse ($doctors as $doctor)
                     <div class="flex justify-between items-center border-b py-2">
-                        <div>
-                            <strong>{{ $doctor->user->name }}</strong> ({{ $doctor->user->email }})<br>
-                            <span class="text-sm text-gray-500">{{ $doctor->specialty->libelle }} - {{ $doctor->numero_ordre }}</span>
-                        </div>
+                    <div>
+                    <strong>{{ $doctor->user->name }}</strong> ({{ $doctor->user->email }})<br>
+                    <span class="text-sm text-gray-500">{{ $doctor->specialty->libelle }} - {{ $doctor->numero_ordre }}</span>
                     </div>
-                @empty
+                    <div class="flex gap-2">
+                    <a href="{{ route('admin.doctors.edit', $doctor) }}" class="text-blue-600">Edit</a>
+                    <form method="POST" action="{{ route('admin.doctors.destroy', $doctor) }}" onsubmit="return confirm('Delete this doctor?')">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="text-red-600">Delete</button>
+                        </form>
+                        </div>
+                        </div>
+                        @empty
                     <p>No doctors yet.</p>
                 @endforelse
             </div>

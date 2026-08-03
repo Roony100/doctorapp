@@ -50,4 +50,48 @@ class DoctorController extends Controller
 
         return redirect()->route('admin.doctors.index')->with('status', 'Doctor account created.');
     }
+
+    public function edit(Doctor $doctor)
+    {
+    $doctor->load('user', 'specialty');
+    $specialties = Specialty::orderBy('libelle')->get();
+    return view('admin.doctors.edit', compact('doctor', 'specialties'));
+}
+
+public function update(Request $request, Doctor $doctor)
+{
+    $validated = $request->validate([
+        'name' => ['required', 'string', 'max:255'],
+        'specialty_id' => ['required', 'exists:specialties,id'],
+        'numero_ordre' => ['required', 'string', 'max:255'],
+        'duree_consultation' => ['required', 'integer', 'min:5'],
+    ]);
+
+    $doctor->user->update(['name' => $validated['name']]);
+
+    $doctor->update([
+        'specialty_id' => $validated['specialty_id'],
+        'numero_ordre' => $validated['numero_ordre'],
+        'duree_consultation' => $validated['duree_consultation'],
+    ]);
+
+    return redirect()->route('admin.doctors.index')->with('status', 'Doctor updated.');
+}
+
+public function destroy(Doctor $doctor)
+{
+    $hasFutureAppointments = $doctor->appointments()
+        ->where('date_heure_debut', '>', now())
+        ->exists();
+
+    if ($hasFutureAppointments) {
+        return redirect()->route('admin.doctors.index')
+            ->with('status', 'Cannot delete: this doctor has future appointments.');
+    }
+
+    $doctor->user->delete();
+    $doctor->delete();
+
+    return redirect()->route('admin.doctors.index')->with('status', 'Doctor deleted.');
+    }
 }
