@@ -75,6 +75,7 @@ Route::middleware(['auth', 'verified', 'checkrole:patient'])->prefix('patient')-
     Route::get('booking/search', [BookingController::class, 'search'])->name('booking.search');
     Route::get('booking/doctor/{doctor}/slots', [BookingController::class, 'slots'])->name('booking.slots');
     Route::post('booking/doctor/{doctor}/book', [BookingController::class, 'store'])->name('booking.store');
+    Route::get('booking/doctor/{doctor}/reschedule/{appointment}', [BookingController::class, 'reschedule'])->name('booking.reschedule');
     Route::get('appointments', [PatientAppointmentController::class, 'index'])->name('appointments.index');
     Route::patch('appointments/{appointment}/cancel', [PatientAppointmentController::class, 'cancel'])->name('appointments.cancel');
 });

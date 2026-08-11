@@ -10,6 +10,11 @@
 
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6 mb-6">
                 <p><strong>{{ __('Specialty') }}:</strong> {{ $doctor->specialty->libelle }}</p>
+                @if ($rescheduling)
+                    <p class="mt-2 text-sm text-indigo-700 bg-indigo-50 p-2 rounded">
+                        {{ __('Rescheduling your appointment from :date', ['date' => \Carbon\Carbon::parse($rescheduling->date_heure_debut)->format('D, M j - H:i')]) }}
+                    </p>
+                @endif
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -17,13 +22,13 @@
                 <!-- Mini calendar -->
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-4">
                     <div class="flex justify-between items-center mb-3">
-                        <a href="{{ route('patient.booking.slots', ['doctor' => $doctor, 'date' => $previousMonth . '-01']) }}" class="text-indigo-600 text-sm">
+                        <a href="{{ $rescheduling ? route('patient.booking.reschedule', ['doctor' => $doctor, 'appointment' => $rescheduling, 'date' => $previousMonth . '-01']) : route('patient.booking.slots', ['doctor' => $doctor, 'date' => $previousMonth . '-01']) }}" class="text-indigo-600 text-sm">
                             &larr;
                         </a>
                         <h3 class="font-semibold text-gray-900 dark:text-gray-100">
                             {{ $monthStart->format('F Y') }}
                         </h3>
-                        <a href="{{ route('patient.booking.slots', ['doctor' => $doctor, 'date' => $nextMonth . '-01']) }}" class="text-indigo-600 text-sm">
+                        <a href="{{ $rescheduling ? route('patient.booking.reschedule', ['doctor' => $doctor, 'appointment' => $rescheduling, 'date' => $nextMonth . '-01']) : route('patient.booking.slots', ['doctor' => $doctor, 'date' => $nextMonth . '-01']) }}" class="text-indigo-600 text-sm">
                             &rarr;
                         </a>
                     </div>
@@ -53,8 +58,8 @@
                                     $colorClass .= ' ring-2 ring-indigo-600';
                                 }
                             @endphp
-                            <a href="{{ route('patient.booking.slots', ['doctor' => $doctor, 'date' => $dateKey]) }}"
-                               class="block text-center text-xs p-2 rounded {{ $colorClass }}">
+                            <a href="{{ $rescheduling ? route('patient.booking.reschedule', ['doctor' => $doctor, 'appointment' => $rescheduling, 'date' => $dateKey]) : route('patient.booking.slots', ['doctor' => $doctor, 'date' => $dateKey]) }}"
+                            class="block text-center text-xs p-2 rounded {{ $colorClass }}">
                                 {{ $day }}
                             </a>
                         @endfor
@@ -85,10 +90,13 @@
                         <div class="grid grid-cols-2 gap-2">
                             @foreach ($slots as $slot)
                                 <form method="POST" action="{{ route('patient.booking.store', $doctor) }}"
-                                      onsubmit="return confirm('Book the {{ $slot['start'] }} - {{ $slot['end'] }} slot?')">
+                                    onsubmit="return confirm('{{ $rescheduling ? 'Reschedule to' : 'Book the' }} {{ $slot['start'] }} - {{ $slot['end'] }} slot?')">
                                     @csrf
                                     <input type="hidden" name="date" value="{{ $date }}">
                                     <input type="hidden" name="start_time" value="{{ $slot['start'] }}">
+                                    @if ($rescheduling)
+                                        <input type="hidden" name="reschedule_appointment_id" value="{{ $rescheduling->id }}">
+                                    @endif
                                     <button type="submit" class="w-full border rounded p-2 hover:bg-indigo-50 text-gray-900">
                                         {{ $slot['start'] }} - {{ $slot['end'] }}
                                     </button>

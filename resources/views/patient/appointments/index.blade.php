@@ -50,6 +50,23 @@
                                     <span class="text-xs px-2 py-1 rounded {{ $statusStyles[$appointment->statut] ?? 'bg-gray-100 text-gray-700' }}">
                                         {{ $statusLabels[$appointment->statut] ?? $appointment->statut }}
                                     </span>
+
+                                    @if (in_array($appointment->statut, ['en_attente', 'confirme']))
+                                        <div class="mt-2 flex gap-2">
+                                            <a href="{{ route('patient.booking.reschedule', ['doctor' => $appointment->doctor_id, 'appointment' => $appointment]) }}"
+                                            class="text-xs bg-indigo-600 text-white px-2 py-1 rounded">
+                                                {{ __('Reschedule') }}
+                                            </a>
+                                            <form method="POST" action="{{ route('patient.appointments.cancel', $appointment) }}"
+                                                onsubmit="return confirm('Cancel this appointment?')">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" class="text-xs bg-red-600 text-white px-2 py-1 rounded">
+                                                    {{ __('Cancel') }}
+                                                </button>
+                                            </form>
+                                        </div>
+                                    @endif
                                 </div>
                             @empty
                                 <p class="text-sm">{{ __('No upcoming appointments.') }}</p>

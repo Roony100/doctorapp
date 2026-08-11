@@ -83,9 +83,7 @@ class DoctorAppointmentController extends Controller
 
     public function confirm(Appointment $appointment)
     {
-        $doctor = Auth::user()->doctor;
-
-        abort_unless($appointment->doctor_id === $doctor->id, 403);
+        $this->authorize('manageAsDoctor', $appointment);
 
         $appointment->update(['statut' => 'confirme']);
 
@@ -94,9 +92,7 @@ class DoctorAppointmentController extends Controller
 
     public function cancel(Appointment $appointment)
     {
-        $doctor = Auth::user()->doctor;
-
-        abort_unless($appointment->doctor_id === $doctor->id, 403);
+        $this->authorize('manageAsDoctor', $appointment);
 
         $appointment->update(['statut' => 'annule']);
 
@@ -105,9 +101,7 @@ class DoctorAppointmentController extends Controller
 
     public function complete(Appointment $appointment)
     {
-        $doctor = Auth::user()->doctor;
-
-        abort_unless($appointment->doctor_id === $doctor->id, 403);
+        $this->authorize('manageAsDoctor', $appointment);
 
         $appointment->update(['statut' => 'termine']);
 
@@ -116,9 +110,7 @@ class DoctorAppointmentController extends Controller
 
     public function markAbsent(Appointment $appointment)
     {
-        $doctor = Auth::user()->doctor;
-
-        abort_unless($appointment->doctor_id === $doctor->id, 403);
+        $this->authorize('manageAsDoctor', $appointment);
 
         $appointment->update(['statut' => 'absent']);
 

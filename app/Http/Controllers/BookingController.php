@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Doctor;
 use App\Models\Specialty;
 use App\Models\ClinicHoliday;
+use App\Models\Appointment;
 use App\Services\SlotGenerator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -45,9 +46,42 @@ class BookingController extends Controller
         $previousMonth = $monthStart->copy()->subMonth()->format('Y-m');
         $nextMonth = $monthStart->copy()->addMonth()->format('Y-m');
 
+        $rescheduling = null;
+
         return view('patient.booking.slots', compact(
             'doctor', 'date', 'slots',
-            'dayStatuses', 'monthStart', 'daysInMonth', 'startOffset', 'previousMonth', 'nextMonth'
+            'dayStatuses', 'monthStart', 'daysInMonth', 'startOffset', 'previousMonth', 'nextMonth',
+            'rescheduling'
+        ));
+    }
+
+    public function reschedule(Request $request, Doctor $doctor, Appointment $appointment, SlotGenerator $slotGenerator)
+    {
+        $this->authorize('manageAsPatient', $appointment);
+        abort_unless($appointment->doctor_id === $doctor->id, 403);
+        abort_unless(in_array($appointment->statut, ['en_attente', 'confirme']), 403, 'This appointment cannot be rescheduled.');
+
+        $doctor->load('user', 'specialty');
+
+        $date = $request->input('date', now()->format('Y-m-d'));
+
+        $slots = $slotGenerator->generate($doctor, $date);
+
+        $month = Carbon::parse($date)->format('Y-m');
+        $dayStatuses = $this->buildDayStatuses($doctor, $month, $slotGenerator);
+
+        $monthStart = Carbon::parse($month . '-01')->startOfMonth();
+        $daysInMonth = $monthStart->daysInMonth;
+        $startOffset = $monthStart->dayOfWeekIso - 1;
+        $previousMonth = $monthStart->copy()->subMonth()->format('Y-m');
+        $nextMonth = $monthStart->copy()->addMonth()->format('Y-m');
+
+        $rescheduling = $appointment;
+
+        return view('patient.booking.slots', compact(
+            'doctor', 'date', 'slots',
+            'dayStatuses', 'monthStart', 'daysInMonth', 'startOffset', 'previousMonth', 'nextMonth',
+            'rescheduling'
         ));
     }
 
@@ -117,6 +151,7 @@ class BookingController extends Controller
         $validated = $request->validate([
             'date' => ['required', 'date'],
             'start_time' => ['required', 'date_format:H:i'],
+            'reschedule_appointment_id' => ['nullable', 'integer'],
         ]);
 
         $patient = Auth::user()->patient;
@@ -124,18 +159,36 @@ class BookingController extends Controller
         $start = Carbon::parse($validated['date'] . ' ' . $validated['start_time']);
         $end = $start->copy()->addMinutes($doctor->duree_consultation);
 
+        $oldAppointment = null;
+
+        if (!empty($validated['reschedule_appointment_id'])) {
+            $oldAppointment = Appointment::find($validated['reschedule_appointment_id']);
+
+            abort_unless($oldAppointment, 404);
+            $this->authorize('manageAsPatient', $oldAppointment);
+            abort_unless($oldAppointment->doctor_id === $doctor->id, 403);
+        }
+
         $booked = false;
 
-        DB::transaction(function () use ($doctor, $patient, $start, $end, &$booked) {
-            $conflict = $doctor->appointments()
+        DB::transaction(function () use ($doctor, $patient, $start, $end, $oldAppointment, &$booked) {
+            $conflictQuery = $doctor->appointments()
                 ->whereIn('statut', ['en_attente', 'confirme'])
                 ->where('date_heure_debut', '<', $end)
-                ->where('date_heure_fin', '>', $start)
-                ->lockForUpdate()
-                ->exists();
+                ->where('date_heure_fin', '>', $start);
+
+            if ($oldAppointment) {
+                $conflictQuery->where('id', '!=', $oldAppointment->id);
+            }
+
+            $conflict = $conflictQuery->lockForUpdate()->exists();
 
             if ($conflict) {
                 return;
+            }
+
+            if ($oldAppointment) {
+                $oldAppointment->update(['statut' => 'annule']);
             }
 
             $doctor->appointments()->create([
@@ -155,8 +208,10 @@ class BookingController extends Controller
                 ->with('status', 'Sorry, that slot was just taken. Please choose another.');
         }
 
+        $message = $oldAppointment ? 'Appointment rescheduled successfully.' : 'Appointment booked successfully.';
+
         return redirect()
             ->route('patient.dashboard')
-            ->with('status', 'Appointment booked successfully.');
+            ->with('status', $message);
     }
 }
