@@ -23,22 +23,34 @@
                 </x-nav-link>
 
                     @if (auth()->user()->role === 'admin')
-                        <x-nav-link :href="route('admin.specialties.index')" :active="request()->routeIs('admin.specialties.*')">
-                            {{ __('Specialties') }}
-                        </x-nav-link>
-                        <x-nav-link :href="route('admin.doctors.index')" :active="request()->routeIs('admin.doctors.*')">
-                            {{ __('Doctors') }}
-                        </x-nav-link>
-                    @endif
+    <x-nav-link :href="route('admin.specialties.index')" :active="request()->routeIs('admin.specialties.*')">
+        {{ __('Specialties') }}
+    </x-nav-link>
+    <x-nav-link :href="route('admin.doctors.index')" :active="request()->routeIs('admin.doctors.*')">
+        {{ __('Doctors') }}
+    </x-nav-link>
+    <x-nav-link :href="route('admin.holidays.index')" :active="request()->routeIs('admin.holidays.*')">
+        {{ __('Holidays') }}
+    </x-nav-link>
+@endif
 
                     @if (auth()->user()->role === 'doctor')
-                        <x-nav-link :href="route('doctor.availabilities.index')" :active="request()->routeIs('doctor.availabilities.*')">
-                            {{ __('My Hours') }}
-                        </x-nav-link>
-                        <x-nav-link :href="route('doctor.absences.index')" :active="request()->routeIs('doctor.absences.*')">
-                            {{ __('My Absences') }}
-                        </x-nav-link>
-                    @endif
+    <x-nav-link :href="route('doctor.appointments.index')" :active="request()->routeIs('doctor.appointments.index')">
+        {{ __('My Appointments') }}
+    </x-nav-link>
+    <x-nav-link :href="route('doctor.availabilities.index')" :active="request()->routeIs('doctor.availabilities.*')">
+        {{ __('My Hours') }}
+    </x-nav-link>
+@endif
+
+                    @if (auth()->user()->role === 'patient')
+    <x-nav-link :href="route('patient.booking.search')" :active="request()->routeIs('patient.booking.*')">
+        {{ __('Book an Appointment') }}
+    </x-nav-link>
+    <x-nav-link :href="route('patient.appointments.index')" :active="request()->routeIs('patient.appointments.index')">
+        {{ __('My Appointments') }}
+    </x-nav-link>
+@endif
     
                 </div>
             </div>
@@ -95,6 +107,38 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+
+            @if (auth()->user()->role === 'admin')
+    <x-responsive-nav-link :href="route('admin.specialties.index')" :active="request()->routeIs('admin.specialties.*')">
+        {{ __('Specialties') }}
+    </x-responsive-nav-link>
+    <x-responsive-nav-link :href="route('admin.doctors.index')" :active="request()->routeIs('admin.doctors.*')">
+        {{ __('Doctors') }}
+    </x-responsive-nav-link>
+    <x-responsive-nav-link :href="route('admin.holidays.index')" :active="request()->routeIs('admin.holidays.*')">
+        {{ __('Holidays') }}
+    </x-responsive-nav-link>
+@endif
+
+            @if (auth()->user()->role === 'doctor')
+    <x-responsive-nav-link :href="route('doctor.appointments.index')" :active="request()->routeIs('doctor.appointments.index')">
+        {{ __('My Appointments') }}
+    </x-responsive-nav-link>
+    
+    <x-responsive-nav-link :href="route('doctor.availabilities.index')" :active="request()->routeIs('doctor.availabilities.*')">
+        {{ __('My Hours') }}
+    </x-responsive-nav-link>
+@endif
+
+            @if (auth()->user()->role === 'patient')
+    <x-responsive-nav-link :href="route('patient.booking.search')" :active="request()->routeIs('patient.booking.*')">
+        {{ __('Book an Appointment') }}
+    </x-responsive-nav-link>
+    <x-responsive-nav-link :href="route('patient.appointments.index')" :active="request()->routeIs('patient.appointments.index')">
+        {{ __('My Appointments') }}
+    </x-responsive-nav-link>
+    
+@endif
         </div>
 
         <!-- Responsive Settings Options -->

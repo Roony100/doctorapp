@@ -11,7 +11,10 @@ class AbsenceController extends Controller
     {
         $doctor = Auth::user()->doctor;
 
-        $absences = $doctor->absences()->orderBy('date_debut')->get();
+        $absences = $doctor->absences()
+            ->where('date_fin', '>=', now()->format('Y-m-d'))
+            ->orderBy('date_debut')
+            ->get();
 
         return view('doctor.absences.index', compact('absences'));
     }
@@ -28,7 +31,7 @@ class AbsenceController extends Controller
 
         $doctor->absences()->create($validated);
 
-        return redirect()->route('doctor.absences.index')->with('status', 'Absence added.');
+        return redirect()->route('doctor.availabilities.index')->with('status', 'Absence added.');
     }
 
     public function destroy(int $id)
@@ -38,6 +41,6 @@ class AbsenceController extends Controller
         $absence = $doctor->absences()->findOrFail($id);
         $absence->delete();
 
-        return redirect()->route('doctor.absences.index')->with('status', 'Absence removed.');
+        return redirect()->route('doctor.availabilities.index')->with('status', 'Absence removed.');
     }
 }

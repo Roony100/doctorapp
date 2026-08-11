@@ -17,7 +17,7 @@
                     <div class="flex justify-between items-center border-b py-2">
                     <div>
                     <strong>{{ $doctor->user->name }}</strong> ({{ $doctor->user->email }})<br>
-                    <span class="text-sm text-gray-500">{{ $doctor->specialty->libelle }} - {{ $doctor->numero_ordre }}</span>
+                    <span class="text-sm text-gray-500">{{ $doctor->specialties->pluck('libelle')->join(', ') }} - {{ $doctor->numero_ordre }}</span>
                     </div>
                     <div class="flex gap-2">
                     <a href="{{ route('admin.doctors.edit', $doctor) }}" class="text-blue-600">Edit</a>

@@ -13,16 +13,19 @@
                         <label>Full name</label>
                         <input type="text" name="name" value="{{ old('name', $doctor->user->name) }}" class="border rounded w-full p-2" required>
                     </div>
-                    <div>
-                        <label>Specialty</label>
-                        <select name="specialty_id" class="border rounded w-full p-2" required>
-                            @foreach ($specialties as $specialty)
-                                <option value="{{ $specialty->id }}" @selected($specialty->id === $doctor->specialty_id)>
-                                    {{ $specialty->libelle }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
+                   <div>
+    <label>Specialties</label>
+    @php $currentSpecialtyIds = $doctor->specialties->pluck('id')->toArray(); @endphp
+    <div class="space-y-1 border rounded p-2">
+        @foreach ($specialties as $specialty)
+            <label class="flex items-center gap-2">
+                <input type="checkbox" name="specialty_ids[]" value="{{ $specialty->id }}"
+                    @checked(in_array($specialty->id, $currentSpecialtyIds))>
+                {{ $specialty->libelle }}
+            </label>
+        @endforeach
+    </div>
+</div>
                     <div>
                         <label>Numero d'ordre</label>
                         <input type="text" name="numero_ordre" value="{{ old('numero_ordre', $doctor->numero_ordre) }}" class="border rounded w-full p-2" required>
