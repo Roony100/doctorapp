@@ -7,6 +7,7 @@ use App\Models\Specialty;
 use App\Models\ClinicHoliday;
 use App\Models\Appointment;
 use App\Services\SlotGenerator;
+use App\Notifications\AppointmentBooked;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -170,8 +171,9 @@ class BookingController extends Controller
         }
 
         $booked = false;
+        $newAppointment = null;
 
-        DB::transaction(function () use ($doctor, $patient, $start, $end, $oldAppointment, &$booked) {
+        DB::transaction(function () use ($doctor, $patient, $start, $end, $oldAppointment, &$booked, &$newAppointment) {
             $conflictQuery = $doctor->appointments()
                 ->whereIn('statut', ['en_attente', 'confirme'])
                 ->where('date_heure_debut', '<', $end)
@@ -191,7 +193,7 @@ class BookingController extends Controller
                 $oldAppointment->update(['statut' => 'annule']);
             }
 
-            $doctor->appointments()->create([
+            $newAppointment = $doctor->appointments()->create([
                 'patient_id' => $patient->id,
                 'date_heure_debut' => $start,
                 'date_heure_fin' => $end,
@@ -207,6 +209,9 @@ class BookingController extends Controller
                 ->route('patient.booking.slots', ['doctor' => $doctor, 'date' => $validated['date']])
                 ->with('status', 'Sorry, that slot was just taken. Please choose another.');
         }
+
+        $newAppointment->load('doctor.user');
+        Auth::user()->notify(new AppointmentBooked($newAppointment));
 
         $message = $oldAppointment ? 'Appointment rescheduled successfully.' : 'Appointment booked successfully.';
 
