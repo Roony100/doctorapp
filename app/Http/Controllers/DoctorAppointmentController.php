@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Appointment;
 use App\Models\ClinicHoliday;
+use App\Notifications\AppointmentStatusUpdated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -87,6 +88,9 @@ class DoctorAppointmentController extends Controller
 
         $appointment->update(['statut' => 'confirme']);
 
+        $appointment->load('doctor.user', 'patient.user');
+        $appointment->patient->user->notify(new AppointmentStatusUpdated($appointment));
+
         return redirect()->route('doctor.appointments.index')->with('status', 'Appointment confirmed.');
     }
 
@@ -96,6 +100,9 @@ class DoctorAppointmentController extends Controller
 
         $appointment->update(['statut' => 'annule']);
 
+        $appointment->load('doctor.user', 'patient.user');
+        $appointment->patient->user->notify(new AppointmentStatusUpdated($appointment));
+
         return redirect()->route('doctor.appointments.index')->with('status', 'Appointment cancelled.');
     }
 
@@ -104,6 +111,9 @@ class DoctorAppointmentController extends Controller
         $this->authorize('manageAsDoctor', $appointment);
 
         $appointment->update(['statut' => 'termine']);
+
+        $appointment->load('doctor.user', 'patient.user');
+        $appointment->patient->user->notify(new \App\Notifications\AppointmentCompleted($appointment));
 
         return redirect()->route('doctor.appointments.index')->with('status', 'Appointment marked as done.');
     }

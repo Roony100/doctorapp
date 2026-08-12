@@ -33,6 +33,9 @@ class ConsultationController extends Controller
             $validated
         );
 
+        $appointment->load('doctor.user', 'patient.user');
+        $appointment->patient->user->notify(new \App\Notifications\ConsultationNotesAdded($appointment));
+
         return redirect()->route('doctor.appointments.index')->with('status', 'Consultation notes saved.');
     }
 }
